@@ -7,6 +7,7 @@ import os
 
 # Secret key for encoding JWT tokens
 SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
+if SECRET_KEY=="fallback-secret-key": print("Using fallback secret key.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -58,9 +59,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-    except JWTError:
+        print(f"Decoded Username: {username}")  # Debugging line
+    except JWTError as e:
+        print(f"JWT Error: {e}")  # Debugging line
         raise credentials_exception
     user = fake_users_db.get(username)
     if user is None:
         raise credentials_exception
     return user
+
