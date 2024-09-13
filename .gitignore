@@ -161,3 +161,4 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 .vscode/settings.json
+uploads/{'username': 'testUser', 'hashed_password': '$2b$12$D.WS9K1iWewwlCGibU3HQODZWzuy5Ma5tuYyRzgnShU0EhbQJ3VZm', 'uid': 12345}_file
