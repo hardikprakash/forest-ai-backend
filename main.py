@@ -5,6 +5,7 @@ from auth import authenticate_user, create_access_token, get_current_user, fake_
 from models import Token
 from datetime import timedelta
 import os
+import detection
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -35,7 +36,7 @@ async def upload_image(file: UploadFile = File(...), user: str = Depends(get_cur
     try:
         content = await file.read()
         # Save the image to disk or process it directly
-        with open(f'uploads/{file.filename}', 'wb') as f:
+        with open(f'uploads/frame.jpg', 'wb') as f:
             f.write(content)
         return {"message": "Image uploaded successfully"}
     except Exception as e:
