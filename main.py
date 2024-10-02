@@ -6,6 +6,7 @@ from models import Token
 from datetime import timedelta
 import os
 import detection
+import asyncio
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -35,10 +36,16 @@ async def verify_token(token: str = Depends(oauth2_scheme)):
 async def upload_image(file: UploadFile = File(...), user: str = Depends(get_current_user)):
     try:
         content = await file.read()
-        # Save the image to disk or process it directly
-        with open(f'uploads/frame.jpg', 'wb') as f:
+        file_path = f'uploads/frame.jpg'
+        
+        with open(file_path, 'wb') as f:
             f.write(content)
+        
+        # Call detection asynchronously without blocking the upload
+        asyncio.create_task(detection.detect_people(file_path))
+
         return {"message": "Image uploaded successfully"}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to upload image")
 
