@@ -5,7 +5,6 @@ from matplotlib.pyplot import show
 
 DATABASE = 'detections.db'
 
-TIME_DELAY = 10
 
 async def init_db():
     async with aiosqlite.connect(DATABASE) as db:

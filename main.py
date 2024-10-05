@@ -1,19 +1,21 @@
-import token
 from fastapi import FastAPI, Depends, HTTPException, status, File, UploadFile
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from auth import authenticate_user, create_access_token, get_current_user, fake_users_db, ACCESS_TOKEN_EXPIRE_MINUTES
+from auth import authenticate_user, create_access_token, get_current_user, ACCESS_TOKEN_EXPIRE_MINUTES, init_db
 from models import Token
 from datetime import timedelta
-import os
-import detection
 import asyncio
+import detection
 
 app = FastAPI()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+@app.on_event("startup")
+async def startup():
+    await init_db()
+
 @app.post("/login", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    user = await authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -24,7 +26,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = create_access_token(
         data={"sub": user["username"]}, expires_delta=access_token_expires
     )
-    # print(f"Generated Token: {access_token}")  # Debugging line
     return {"token": access_token, "token_type": "bearer"}
 
 @app.post("/verify-token")
@@ -41,14 +42,12 @@ async def upload_image(file: UploadFile = File(...), user: str = Depends(get_cur
         with open(file_path, 'wb') as f:
             f.write(content)
         
-        # Call detection asynchronously without blocking the upload
         asyncio.create_task(detection.detect_people(file_path))
 
         return {"message": "Image uploaded successfully"}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to upload image")
-
 
 
 if __name__ == "__main__":
